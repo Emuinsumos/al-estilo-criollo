@@ -43,14 +43,25 @@ const toMin = (hhmm) => {
 }
 const fromMin = (m) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`
 
+// Un día puede tener un tramo ['09:00','13:00'] o varios [['08:00','13:00'],['17:00','21:00']]. Siempre devuelve una lista de tramos.
+export function rangesOf(h) {
+  if (!h || !h.length) return []
+  return Array.isArray(h[0]) ? h : [h]
+}
+export function fmtRanges(h) {
+  const r = rangesOf(h)
+  return r.length ? `${r.map((x) => `${x[0]} a ${x[1]}`).join(' y ')} hs` : 'Cerrado'
+}
+
 export function slotsFor(dateStr, HOURS, SLOT_MINUTES = 30, MIN_LEAD_MINUTES = 60) {
   if (!dateStr) return []
   const [y, m, d] = dateStr.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  const h = HOURS?.[date.getDay()]
-  if (!h) return []
+  const ranges = rangesOf(HOURS?.[date.getDay()])
+  if (!ranges.length) return []
   const out = []
-  for (let t = toMin(h[0]); t <= toMin(h[1]); t += SLOT_MINUTES) out.push(fromMin(t))
+  for (const [a, b] of ranges) for (let t = toMin(a); t <= toMin(b); t += SLOT_MINUTES) if (!out.includes(fromMin(t))) out.push(fromMin(t))
+  out.sort()
   const now = new Date()
   if (ymd(now) === dateStr) {
     const limit = now.getHours() * 60 + now.getMinutes() + MIN_LEAD_MINUTES

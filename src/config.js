@@ -37,14 +37,16 @@ export const FIREBASE_CONFIG = {
 export const DB_PREFIX = 'criollo'
 
 // Horarios de retiro. 0 = domingo ... 6 = sábado. null = cerrado.
+// Un tramo: ['08:30', '13:00']. Horario cortado: [['08:00', '13:00'], ['17:00', '21:00']]
+const CORTADO = [['08:00', '13:00'], ['17:00', '21:00']]
 export const HOURS = {
-  0: null,
-  1: ['09:00', '20:00'],
-  2: ['09:00', '20:00'],
-  3: ['09:00', '20:00'],
-  4: ['09:00', '20:00'],
-  5: ['09:00', '20:00'],
-  6: ['09:00', '14:00'],
+  0: ['08:30', '13:00'],
+  1: CORTADO,
+  2: CORTADO,
+  3: CORTADO,
+  4: CORTADO,
+  5: CORTADO,
+  6: CORTADO,
 }
 export const SLOT_MINUTES = 30 // cada cuánto se ofrece un horario de retiro
 export const MIN_LEAD_MINUTES = 60 // anticipación mínima para retirar hoy

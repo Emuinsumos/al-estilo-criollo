@@ -1,3 +1,4 @@
+import { fmtRanges } from '../utils'
 import { useSettings } from '../settings'
 import Socials from './Socials'
 import BrandName from './BrandName'
@@ -23,7 +24,7 @@ export default function Visit() {
             {order.map((d) => (
               <span key={d} style={{ display: 'contents' }}>
                 <span>{NAMES[d]}</span>
-                <span>{HOURS[d] ? `${HOURS[d][0]} a ${HOURS[d][1]} hs` : 'Cerrado'}</span>
+                <span>{fmtRanges(HOURS[d])}</span>
               </span>
             ))}
           </div>

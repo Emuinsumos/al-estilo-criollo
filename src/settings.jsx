@@ -1,11 +1,14 @@
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { useNode } from './hooks'
 import { BRAND, WHATSAPP, SOCIALS, MAP_QUERY, GOOGLE_REVIEWS_URL, HOURS, SLOT_MINUTES, MIN_LEAD_MINUTES, DEFAULT_BOT_GREETING } from './config'
-import { waPhone } from './utils'
+import { waPhone, rangesOf } from './utils'
 
 const hoursToObj = (H) => {
   const o = {}
-  for (let d = 0; d < 7; d++) o[d] = { open: !!H[d], from: H[d]?.[0] || '09:00', to: H[d]?.[1] || '20:00' }
+  for (let d = 0; d < 7; d++) {
+    const r = rangesOf(H[d])
+    o[d] = { open: r.length > 0, from: r[0]?.[0] || '09:00', to: r[0]?.[1] || '13:00', two: r.length > 1, from2: r[1]?.[0] || '17:00', to2: r[1]?.[1] || '21:00' }
+  }
   return o
 }
 
@@ -44,7 +47,7 @@ export function SettingsProvider({ children }) {
     for (let d = 0; d < 7; d++) {
       const h = { ...DEFAULTS.hours[d], ...(r.hours?.[d] || {}) }
       hoursForm[d] = h
-      hours[d] = h.open ? [h.from, h.to] : null
+      hours[d] = h.open ? (h.two ? [[h.from, h.to], [h.from2, h.to2]] : [[h.from, h.to]]) : null
     }
     return {
       ...m,

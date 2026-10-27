@@ -631,9 +631,20 @@ function BusinessAdmin() {
             </label>
             {f.hours[d].open ? (
               <>
-                <input className="inp" type="time" style={{ width: 120 }} value={f.hours[d].from} onChange={(e) => setDay(d, 'from', e.target.value)} />
+                <input className="inp" type="time" style={{ width: 140 }} value={f.hours[d].from} onChange={(e) => setDay(d, 'from', e.target.value)} />
                 <span>a</span>
-                <input className="inp" type="time" style={{ width: 120 }} value={f.hours[d].to} onChange={(e) => setDay(d, 'to', e.target.value)} />
+                <input className="inp" type="time" style={{ width: 140 }} value={f.hours[d].to} onChange={(e) => setDay(d, 'to', e.target.value)} />
+                {f.hours[d].two ? (
+                  <>
+                    <span>y</span>
+                    <input className="inp" type="time" style={{ width: 140 }} value={f.hours[d].from2} onChange={(e) => setDay(d, 'from2', e.target.value)} />
+                    <span>a</span>
+                    <input className="inp" type="time" style={{ width: 140 }} value={f.hours[d].to2} onChange={(e) => setDay(d, 'to2', e.target.value)} />
+                    <button type="button" className="btn-ghost" style={{ padding: '8px 12px' }} onClick={() => setDay(d, 'two', false)}>Quitar 2º horario</button>
+                  </>
+                ) : (
+                  <button type="button" className="btn-ghost" style={{ padding: '8px 12px' }} onClick={() => setDay(d, 'two', true)}>+ Horario cortado</button>
+                )}
               </>
             ) : <span className="hint">Cerrado</span>}
           </div>

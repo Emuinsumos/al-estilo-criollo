@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useBotItems } from '../hooks'
 import { useSettings } from '../settings'
 import { DEFAULT_BOT } from '../config'
-import { norm } from '../utils'
+import { norm, fmtRanges } from '../utils'
 
 const NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -16,7 +16,7 @@ export default function Bot() {
   const faq = isDefault ? DEFAULT_BOT : items
 
   const fill = (t) => {
-    const hrs = [1, 2, 3, 4, 5, 6, 0].map((d) => `${NAMES[d]}: ${s.hours[d] ? `${s.hours[d][0]} a ${s.hours[d][1]} hs` : 'cerrado'}`).join('\n')
+    const hrs = [1, 2, 3, 4, 5, 6, 0].map((d) => `${NAMES[d]}: ${s.hours[d] ? fmtRanges(s.hours[d]) : 'cerrado'}`).join('\n')
     return t
       .replaceAll('{horarios}', hrs)
       .replaceAll('{direccion}', s.address || s.mapQuery || 'nuestro local')
