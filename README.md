@@ -29,4 +29,4 @@ Los datos van bajo el nodo `criollo/`. **No reemplaces las reglas existentes del
 Subir todos los archivos al repo de GitHub y conectarlo a Vercel (Framework: Vite). Vercel hace `npm install` y `npm run build` solo.
 
 ## Admin
-Entrar desde el pie de página ("Acceso administrador") o con `tu-web.vercel.app/#admin`.
+Entrar con el botón de la tranquera (arriba a la derecha) o con `tu-web.vercel.app/#admin`. Usuario y contraseña iniciales: `admin` / `1234` (cambiarlos en la pestaña Negocio).

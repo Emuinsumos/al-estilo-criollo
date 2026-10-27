@@ -13,8 +13,8 @@ export const BRAND = {
 // Argentina celular: 549 + código de área sin 0 + número sin 15. Ej: 5491155554444
 export const WHATSAPP = '5491100000000'
 
-// Acceso al panel de administración (se entra desde el pie de página o con /#admin)
-export const ADMIN = { user: 'admin', pass: 'criollo2026' }
+// Acceso al panel de administración (se entra con el botón de la tranquera, arriba a la derecha, o con /#admin)
+export const ADMIN = { user: 'admin', pass: '1234' }
 
 // Firebase Realtime Database (proyecto chino-a425c, datos bajo el prefijo "criollo/").
 // Si databaseURL está vacío o dice "PEGAR", la web funciona en MODO DEMO.

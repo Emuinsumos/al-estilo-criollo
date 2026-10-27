@@ -633,7 +633,7 @@ function BusinessAdmin() {
         <span className="label-s" style={{ marginTop: 0 }}>Acceso al panel</span>
         <div className="two">
           {inp('adminUser', 'Usuario', 'admin')}
-          {inp('adminPass', 'Contraseña', 'criollo2026')}
+          {inp('adminPass', 'Contraseña', '1234')}
         </div>
         <div className="hint" style={{ marginTop: -8 }}>Si lo dejás vacío se usa el usuario y contraseña original. Cambialos para que solo entre el dueño.</div>
       </div>

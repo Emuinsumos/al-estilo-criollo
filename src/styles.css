@@ -372,3 +372,13 @@ a.btn-ghost, a.btn-ghost:visited { color: var(--cream); display: inline-flex; al
 .bot-panel form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--panel); }
 .bot-panel form input { flex: 1; background: var(--bg2); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; outline: none; min-width: 0; }
 .bot-panel form button { width: 42px; border-radius: 50%; background: var(--red); }
+
+.gate-btn { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; color: var(--gold2); background: var(--panel); transition: all .2s; }
+.gate-btn:hover { background: var(--panel2); border-color: var(--gold); }
+@media (max-width: 380px) { .cart-btn { padding: 0 12px; } }
+
+.socials a[data-b=instagram]:hover { background: linear-gradient(45deg, #f09433, #dc2743 55%, #bc1888); }
+.socials a[data-b=facebook]:hover { background: #1877f2; }
+.socials a[data-b=tiktok]:hover { background: #111; box-shadow: -2px -2px 0 #25f4ee, 2px 2px 0 #fe2c55; }
+.socials a[data-b=whatsapp]:hover { background: #25d366; }
+.socials a:hover { border-color: transparent; color: #fff; }

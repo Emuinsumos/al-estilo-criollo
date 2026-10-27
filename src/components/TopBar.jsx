@@ -1,4 +1,5 @@
 import { useSettings } from '../settings'
+import { Gate } from './Icons'
 import { useCart } from '../cart'
 
 export default function TopBar({ query, setQuery }) {
@@ -26,6 +27,7 @@ export default function TopBar({ query, setQuery }) {
           <span className="label">Mi pedido</span>
           <span className="n">{count}</span>
         </button>
+        <a className="gate-btn" href="#admin" aria-label="Acceso administrador" title="Acceso administrador"><Gate /></a>
       </div>
     </div>
   )
