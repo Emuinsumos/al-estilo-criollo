@@ -14,13 +14,23 @@ export const BRAND = {
 export const WHATSAPP = '5491100000000'
 
 // Acceso al panel de administración (se entra con el botón de la tranquera, arriba a la derecha, o con /#admin)
+// (Solo para el MODO DEMO sin Firebase. Con Firebase se usa Firebase Authentication.)
 export const ADMIN = { user: 'admin', pass: '1234' }
+
+// Los usuarios del panel son cuentas de Firebase Authentication con mail "usuario@AUTH_DOMAIN".
+// Ej: usuario "estilocampo" -> estilocampo@criollo.app (no necesita ser un mail real).
+export const AUTH_DOMAIN = 'criollo.app'
 
 // Firebase Realtime Database (proyecto chino-a425c, datos bajo el prefijo "criollo/").
 // Si databaseURL está vacío o dice "PEGAR", la web funciona en MODO DEMO.
 export const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyA-fuFrcLsUpUIkL40qcgxj2IGllN-SvwE',
+  authDomain: 'chino-a425c.firebaseapp.com',
   databaseURL: 'https://chino-a425c-default-rtdb.firebaseio.com',
   projectId: 'chino-a425c',
+  storageBucket: 'chino-a425c.firebasestorage.app',
+  messagingSenderId: '772632398264',
+  appId: '1:772632398264:web:c20e9d76a02aa3214da74d',
 }
 
 // Todo se guarda bajo este prefijo, así no se mezcla con otros proyectos.

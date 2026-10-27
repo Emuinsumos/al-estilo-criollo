@@ -1,47 +1,49 @@
 import { useEffect, useRef, useState } from 'react'
-import { ADMIN, DEFAULT_BOT } from '../config'
+import { DEFAULT_BOT } from '../config'
 import { useSettings } from '../settings'
-import { IS_DEMO, setValue, removeValue, newId } from '../store'
+import { IS_DEMO, setValue, removeValue, newId, authSubscribe, loginUser, logoutUser, changeMyPassword } from '../store'
 import { useBotItems, useCategories, useNode, useOrders, useProducts, useReviews } from '../hooks'
 import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, waLink, waPhone } from '../utils'
 import ImageCropper from './ImageCropper'
 
-const SESSION = 'criollo-admin'
-
 export default function Admin() {
   const s = useSettings()
-  const [ok, setOk] = useState(() => sessionStorage.getItem(SESSION) === '1')
+  const [user, setUser] = useState(undefined)
   const [u, setU] = useState('')
   const [p, setP] = useState('')
   const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  if (!ok)
+  useEffect(() => authSubscribe(setUser), [])
+
+  if (user === undefined) return <div className="login"><div className="hint">Cargando…</div></div>
+  if (!user)
     return (
       <div className="login">
         <form
           className="box"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault()
-            if (u.trim() === (s.adminUser || ADMIN.user) && p === (s.adminPass || ADMIN.pass)) {
-              sessionStorage.setItem(SESSION, '1')
-              setOk(true)
-            } else setErr('Usuario o contraseña incorrectos')
+            setErr('')
+            setBusy(true)
+            try { await loginUser(u, p) } catch (x) { setErr(x.message) }
+            setBusy(false)
           }}
         >
           <h1>{s.name}</h1>
           <p className="hint" style={{ marginBottom: 18 }}>Panel de administración</p>
-          <div className="field"><label>Usuario</label><input className="inp" value={u} onChange={(e) => setU(e.target.value)} autoCapitalize="none" /></div>
-          <div className="field"><label>Contraseña</label><input className="inp" type="password" value={p} onChange={(e) => setP(e.target.value)} /></div>
+          <div className="field"><label>Usuario</label><input className="inp" value={u} onChange={(e) => setU(e.target.value)} autoCapitalize="none" autoComplete="username" /></div>
+          <div className="field"><label>Contraseña</label><input className="inp" type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></div>
           {err && <div className="err">{err}</div>}
-          <button className="btn-red" type="submit">Entrar</button>
+          <button className="btn-red" type="submit" disabled={busy}>{busy ? 'Entrando…' : 'Entrar'}</button>
           <a href="#" className="hint" style={{ display: 'block', textAlign: 'center', marginTop: 14 }}>← Volver a la web</a>
         </form>
       </div>
     )
-  return <Panel onExit={() => { sessionStorage.removeItem(SESSION); setOk(false) }} />
+  return <Panel onExit={logoutUser} username={user.username} />
 }
 
-function Panel({ onExit }) {
+function Panel({ onExit, username }) {
   const s = useSettings()
   const [tab, setTab] = useState('orders')
   const { orders } = useOrders()
@@ -63,7 +65,7 @@ function Panel({ onExit }) {
       {IS_DEMO && <div className="demo-banner">Modo demo: los datos se guardan solo en este navegador. Falta configurar Firebase.</div>}
       <div className="adm-top">
         <div className="container inner">
-          <h1>Panel · {s.name}</h1>
+          <h1>Panel · {s.name}{username ? <small style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)', fontSize: 13, marginLeft: 8 }}>({username})</small> : null}</h1>
           <a className="btn-ghost" href="#" style={{ textDecoration: 'none' }}>Ver web</a>
           <button className="btn-ghost" onClick={onExit}>Salir</button>
         </div>
@@ -560,7 +562,7 @@ function BusinessAdmin() {
   const pick = () => ({
     name: s.name, tagline: s.tagline, logo: s.logo, phone: s.phone, address: s.address, mapQuery: s.mapQuery,
     instagram: s.instagram, facebook: s.facebook, tiktok: s.tiktok, reviewsUrl: s.reviewsUrl,
-    hours: s.hoursForm, slotMinutes: s.slotMinutes, leadMinutes: s.leadMinutes, adminUser: s.adminUser, adminPass: s.adminPass,
+    hours: s.hoursForm, slotMinutes: s.slotMinutes, leadMinutes: s.leadMinutes,
   })
   const [f, setF] = useState(null)
   const [saved, setSaved] = useState(false)
@@ -569,7 +571,8 @@ function BusinessAdmin() {
   const set = (k, v) => { setSaved(false); setF((x) => ({ ...x, [k]: v })) }
   const setDay = (d, k, v) => set('hours', { ...f.hours, [d]: { ...f.hours[d], [k]: v } })
   const save = async () => {
-    await setValue('settings', { ...s.raw, ...f, slotMinutes: Number(f.slotMinutes), leadMinutes: Number(f.leadMinutes) })
+    const { adminUser, adminPass, ...rest } = s.raw // limpia credenciales viejas de la base
+    await setValue('settings', { ...rest, ...f, slotMinutes: Number(f.slotMinutes), leadMinutes: Number(f.leadMinutes) })
     setSaved(true)
   }
   const inp = (k, label, ph, type = 'text') => (
@@ -644,18 +647,39 @@ function BusinessAdmin() {
         </div>
       </div>
 
-      <div className="ocard" style={{ borderLeftColor: 'var(--gold)' }}>
-        <span className="label-s" style={{ marginTop: 0 }}>Acceso al panel</span>
-        <div className="two">
-          {inp('adminUser', 'Usuario', 'admin')}
-          {inp('adminPass', 'Contraseña', '1234')}
-        </div>
-        <div className="hint" style={{ marginTop: -8 }}>Si lo dejás vacío se usa el usuario y contraseña original. Cambialos para que solo entre el dueño.</div>
-      </div>
+      <PasswordCard />
 
       <div className="sticky-save" style={{ borderRadius: 12, border: '1px solid var(--line)' }}>
         <button className="btn-red" onClick={save}>{saved ? '✓ Cambios guardados' : 'Guardar cambios'}</button>
       </div>
     </>
+  )
+}
+
+function PasswordCard() {
+  const [a, setA] = useState('')
+  const [b, setB] = useState('')
+  const [msg, setMsg] = useState({ t: '', ok: false })
+  const go = async () => {
+    if (a.length < 6) return setMsg({ t: 'Mínimo 6 caracteres.', ok: false })
+    if (a !== b) return setMsg({ t: 'Las dos contraseñas no coinciden.', ok: false })
+    try {
+      await changeMyPassword(a)
+      setA(''); setB('')
+      setMsg({ t: '✓ Contraseña cambiada.', ok: true })
+    } catch (e) {
+      setMsg({ t: e.message, ok: false })
+    }
+  }
+  return (
+    <div className="ocard" style={{ borderLeftColor: 'var(--gold)' }}>
+      <span className="label-s" style={{ marginTop: 0 }}>Cambiar mi contraseña</span>
+      <div className="two">
+        <div className="field"><label>Nueva contraseña</label><input className="inp" type="password" autoComplete="new-password" value={a} onChange={(e) => setA(e.target.value)} /></div>
+        <div className="field"><label>Repetirla</label><input className="inp" type="password" autoComplete="new-password" value={b} onChange={(e) => setB(e.target.value)} /></div>
+      </div>
+      {msg.t && <div className={msg.ok ? 'hint' : 'err'} style={msg.ok ? { color: 'var(--ok)', marginBottom: 8 } : {}}>{msg.t}</div>}
+      <button className="btn-ghost" onClick={go}>Cambiar contraseña</button>
+    </div>
   )
 }

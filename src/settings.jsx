@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { useNode } from './hooks'
-import { BRAND, WHATSAPP, SOCIALS, MAP_QUERY, GOOGLE_REVIEWS_URL, HOURS, SLOT_MINUTES, MIN_LEAD_MINUTES, ADMIN, DEFAULT_BOT_GREETING } from './config'
+import { BRAND, WHATSAPP, SOCIALS, MAP_QUERY, GOOGLE_REVIEWS_URL, HOURS, SLOT_MINUTES, MIN_LEAD_MINUTES, DEFAULT_BOT_GREETING } from './config'
 import { waPhone } from './utils'
 
 const hoursToObj = (H) => {
@@ -23,8 +23,6 @@ export const DEFAULTS = {
   hours: hoursToObj(HOURS),
   slotMinutes: SLOT_MINUTES,
   leadMinutes: MIN_LEAD_MINUTES,
-  adminUser: '',
-  adminPass: '',
   botEnabled: true,
   botGreeting: DEFAULT_BOT_GREETING,
 }

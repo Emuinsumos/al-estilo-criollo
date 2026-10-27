@@ -1,0 +1,52 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "categorias": { ".read": true, ".write": true },
+    "chatbot": { ".read": true, ".write": true },
+    "jugadores": { ".read": true, ".write": true },
+    "partidos": { ".read": true, ".write": true },
+    "productos": { ".read": true, ".write": true },
+    "temporadas": { ".read": true, ".write": true },
+    "turnotarde": { ".read": true, ".write": true },
+    "vrb": { ".read": true, ".write": true },
+    "criollo": {
+      ".read": "auth != null && (auth.token.email === 'admin@criollo.app' || auth.token.email === 'estilocampo@criollo.app')",
+      ".write": "auth != null && (auth.token.email === 'admin@criollo.app' || auth.token.email === 'estilocampo@criollo.app')",
+      "categories": { ".read": true },
+      "products": { ".read": true },
+      "settings": { ".read": true },
+      "reviews": { ".read": true },
+      "botItems": { ".read": true },
+      "orders": {
+        "$id": {
+          ".write": "!data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['code','name','lastName','phone','pickupDate','pickupTime','total','items','status','createdAt']) && (data.exists() || newData.child('status').val() === 'pending')",
+          "code": { ".validate": "newData.isString() && newData.val().length < 16" },
+          "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 60" },
+          "lastName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 60" },
+          "phone": { ".validate": "newData.isString() && newData.val().length > 5 && newData.val().length < 40" },
+          "pickupDate": { ".validate": "newData.isString() && newData.val().length < 12" },
+          "pickupTime": { ".validate": "newData.isString() && newData.val().length < 8" },
+          "total": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 100000000" },
+          "status": { ".validate": "newData.val() === 'pending' || newData.val() === 'completed' || newData.val() === 'cancelled'" }
+        }
+      },
+      "track": {
+        "$code": {
+          ".read": true,
+          ".write": "!data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['code','firstName','status','pickupDate','pickupTime','total','createdAt']) && (data.exists() || newData.child('status').val() === 'pending')",
+          "code": { ".validate": "newData.isString() && newData.val().length < 16" },
+          "firstName": { ".validate": "newData.isString() && newData.val().length < 60" },
+          "total": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 100000000" },
+          "status": { ".validate": "newData.val() === 'pending' || newData.val() === 'completed' || newData.val() === 'cancelled'" }
+        }
+      }
+    },
+    "vitrinaClientes": {
+      ".read": "auth != null && auth.token.email === 'matiasgarbarino19@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'matiasgarbarino19@gmail.com'"
+    }
+  }
+}

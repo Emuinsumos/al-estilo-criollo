@@ -1,32 +1,18 @@
 # Al Estilo Criollo — Carnes Premium
 
-React + Vite + Firebase Realtime Database.
+React + Vite + Firebase (Realtime Database + Authentication).
 
-## Antes de publicar
-Firebase ya está conectado (proyecto `chino-a425c`). Solo queda:
-1. Agregar el bloque `criollo` a las reglas de Firebase (abajo).
-2. `ADMIN` en `src/config.js`: usuario y contraseña iniciales del panel (después se cambian desde el panel).
+## Puesta en marcha
+1. `src/config.js` ya tiene el firebaseConfig completo del proyecto `chino-a425c`.
+2. Firebase → Authentication → Sign-in method → habilitar **Correo/contraseña**.
+3. Firebase → Authentication → Users → **Agregar usuario**:
+   - `admin@criollo.app` (administrador)
+   - `estilocampo@criollo.app` (el cliente)
+   Cada uno con su contraseña. En el panel se entra escribiendo solo `admin` o `estilocampo`.
+4. Firebase → Realtime Database → Reglas → pegar el contenido de `firebase.rules.json` y **Publicar**.
+5. Subir a GitHub → Vercel compila solo.
 
-Todo lo demás lo carga el cliente desde el panel: **pestaña Negocio** (logo, nombre, WhatsApp, dirección, mapa, redes, horarios, link de reseñas y acceso al panel), **Bot** (preguntas frecuentes), **Reseñas**, **Productos** (incluye aumento masivo con deshacer) y **Categorías**.
+Los mails no tienen que existir: son solo identificadores. Si alguien olvida la contraseña, se cambia desde Firebase → Authentication → Users.
 
-## Reglas de Firebase
-Los datos van bajo el nodo `criollo/`. **No reemplaces las reglas existentes del proyecto** (rompería otras webs que usan la misma base): agregá solo este bloque dentro de `"rules"`:
-
-```json
-"criollo": {
-  "categories": { ".read": true, ".write": true },
-  "products":   { ".read": true, ".write": true },
-  "orders":     { ".read": true, ".write": true },
-  "track":      { ".read": true, ".write": true },
-  "reviews":    { ".read": true, ".write": true },
-  "settings":   { ".read": true, ".write": true },
-  "botItems":   { ".read": true, ".write": true },
-  "backup":     { ".read": true, ".write": true }
-}
-```
-
-## Publicar
-Subir todos los archivos al repo de GitHub y conectarlo a Vercel (Framework: Vite). Vercel hace `npm install` y `npm run build` solo.
-
-## Admin
-Entrar con el botón de la tranquera (arriba a la derecha) o con `tu-web.vercel.app/#admin`. Usuario y contraseña iniciales: `admin` / `1234` (cambiarlos en la pestaña Negocio).
+## Panel
+Botón de la tranquera (arriba a la derecha) o `/#admin`. Pestañas: Pedidos (con buscador), Productos (aumento masivo con deshacer), Categorías, Reseñas, Bot y Negocio (logo, WhatsApp, dirección, horarios, redes, cambiar contraseña).
