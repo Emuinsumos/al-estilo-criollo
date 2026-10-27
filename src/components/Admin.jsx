@@ -3,7 +3,7 @@ import { ADMIN, DEFAULT_BOT } from '../config'
 import { useSettings } from '../settings'
 import { IS_DEMO, setValue, removeValue, newId } from '../store'
 import { useBotItems, useCategories, useNode, useOrders, useProducts, useReviews } from '../hooks'
-import { beep, fmtDate, fmtDateTime, money, priceInfo, readyMessage, waLink, waPhone } from '../utils'
+import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, waLink, waPhone } from '../utils'
 import ImageCropper from './ImageCropper'
 
 const SESSION = 'criollo-admin'
@@ -96,7 +96,16 @@ const STATUS = { pending: 'Pendiente', completed: 'Completado', cancelled: 'Canc
 function Orders({ orders }) {
   const st = useSettings()
   const [f, setF] = useState('pending')
-  const list = f === 'all' ? orders : orders.filter((o) => o.status === f)
+  const [q, setQ] = useState('')
+  const term = norm(q.trim()).replace(/\s+/g, ' ')
+  const digits = q.replace(/\D/g, '')
+  // si hay búsqueda, se busca en TODOS los pedidos (sin importar el estado)
+  const list = term
+    ? orders.filter((o) => {
+        const text = norm(`${o.code} ${o.name} ${o.lastName} ${o.name} ${o.lastName}`)
+        return text.includes(term) || norm(o.code).replace('-', '').includes(term.replace('-', '')) || (digits.length >= 3 && String(o.phone).replace(/\D/g, '').includes(digits))
+      })
+    : f === 'all' ? orders : orders.filter((o) => o.status === f)
   const count = (s) => orders.filter((o) => o.status === s).length
 
   const setStatus = (o, status) => {
@@ -111,7 +120,13 @@ function Orders({ orders }) {
 
   return (
     <>
-      <div className="tabs" style={{ paddingTop: 0 }}>
+      <label className="search" style={{ maxWidth: 'none', margin: '0 0 12px' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input type="text" placeholder="Buscar por nombre, apellido o código (ej: EC-7K4M)" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar pedidos" />
+        {q && <button onClick={() => setQ('')} aria-label="Borrar búsqueda" style={{ fontSize: 20, padding: '0 4px' }}>×</button>}
+      </label>
+      {term && <p className="hint" style={{ marginBottom: 10 }}>{list.length} resultado{list.length === 1 ? '' : 's'} en todos los pedidos</p>}
+      <div className="tabs" style={{ paddingTop: 0, opacity: term ? 0.4 : 1 }}>
         {['pending', 'completed', 'cancelled', 'all'].map((s) => (
           <button key={s} className={`tab ${f === s ? 'on' : ''}`} onClick={() => setF(s)}>
             {s === 'all' ? 'Todos' : STATUS[s] + 's'}
@@ -119,7 +134,7 @@ function Orders({ orders }) {
           </button>
         ))}
       </div>
-      {!list.length && <div className="empty">No hay pedidos en esta lista.</div>}
+      {!list.length && <div className="empty">{term ? 'No encontramos pedidos con esa búsqueda.' : 'No hay pedidos en esta lista.'}</div>}
       {list.map((o) => (
         <div key={o.id} className={`ocard ${o.status}`}>
           <div className="head">
