@@ -16,3 +16,6 @@ Los mails no tienen que existir: son solo identificadores. Si alguien olvida la 
 
 ## Panel
 Botón de la tranquera (arriba a la derecha) o `/#admin`. Pestañas: Pedidos (con buscador), Productos (aumento masivo con deshacer), Categorías, Reseñas, Bot y Negocio (logo, WhatsApp, dirección, horarios, redes, cambiar contraseña).
+
+## Manual del cliente
+`public/manual.html` es el manual de uso (se abre en `tu-web.vercel.app/manual.html`). Desde el panel hay un botón "📖 Manual" que lo abre.

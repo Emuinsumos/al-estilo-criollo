@@ -66,6 +66,7 @@ function Panel({ onExit, username }) {
       <div className="adm-top">
         <div className="container inner">
           <h1>Panel · {s.name}{username ? <small style={{ color: 'var(--muted)', fontFamily: 'var(--font-body)', fontSize: 13, marginLeft: 8 }}>({username})</small> : null}</h1>
+          <a className="btn-ghost" href="/manual.html" target="_blank" rel="noopener" style={{ textDecoration: 'none' }}>📖 Manual</a>
           <a className="btn-ghost" href="#" style={{ textDecoration: 'none' }}>Ver web</a>
           <button className="btn-ghost" onClick={onExit}>Salir</button>
         </div>
