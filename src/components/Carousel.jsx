@@ -27,7 +27,7 @@ export default function Carousel({ products, onPick, loading }) {
   if (loading) return null
 
   return (
-    <section className="hero container" aria-label="Ofertas de la semana">
+    <section className="hero container" id="ofertas" aria-label="Ofertas de la semana">
       <div className="section-kicker">{offers.length ? 'Ofertas de la semana' : 'Bienvenidos'}</div>
       <div
         className={`carousel ${paused ? 'paused' : ''}`}
@@ -46,7 +46,7 @@ export default function Carousel({ products, onPick, loading }) {
           if (p.welcome)
             return (
               <div key={p.id} className="slide active">
-                <img className="bg" src={s.logo || '/logo.webp'} alt="" style={{ objectPosition: 'center 40%' }} />
+                <div className="photo contain"><img src={s.logo || '/logo.webp'} alt="" /></div>
                 <div className="copy">
                   <span className="chip-offer">{s.tagline}</span>
                   <h2>El sabor de la parrilla argentina</h2>
@@ -55,14 +55,12 @@ export default function Carousel({ products, onPick, loading }) {
                 </div>
               </div>
             )
-          const best = p.variants
-            .map((v) => ({ v, info: priceInfo(p, v) }))
-            .filter((x) => x.info.isOffer)
-            .sort((a, b) => a.info.price - b.info.price)[0]
+          const offerVars = p.variants.map((v) => ({ v, info: priceInfo(p, v) })).filter((x) => x.info.isOffer).sort((a, b) => a.info.price - b.info.price)
+          const best = offerVars[0]
           const maxPct = Math.max(...p.variants.map((v) => priceInfo(p, v).pct))
           return (
             <div key={p.id} className={`slide ${idx === i ? 'active' : ''}`} aria-hidden={idx !== i}>
-              <img className="bg" src={p.image} alt={p.name} loading={idx === 0 ? 'eager' : 'lazy'} />
+              <div className="photo"><img src={p.image} alt={p.name} loading={idx === 0 ? 'eager' : 'lazy'} /><span className="pct-big">-{maxPct}%</span></div>
               <div className="copy">
                 <span className="chip-offer">Oferta de la semana</span>
                 <h2>{p.name}</h2>
@@ -71,8 +69,14 @@ export default function Carousel({ products, onPick, loading }) {
                   <span className="from">{best.v.label} por</span>
                   <span className="now">{money(best.info.price)}</span>
                   <span className="was">{money(best.info.regular)}</span>
-                  <span className="pct">-{maxPct}%</span>
                 </div>
+                {offerVars.length > 1 && (
+                  <div className="var-chips">
+                    {offerVars.slice(0, 3).map(({ v, info }) => (
+                      <span key={v.label}>{v.label} · <b>{money(info.price)}</b></span>
+                    ))}
+                  </div>
+                )}
                 <button className="btn-gold" onClick={() => onPick(p)}>Lo quiero</button>
               </div>
             </div>

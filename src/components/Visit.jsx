@@ -1,5 +1,6 @@
 import { useSettings } from '../settings'
 import Socials from './Socials'
+import BrandName from './BrandName'
 import { Pin } from './Icons'
 
 const NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -15,7 +16,7 @@ export default function Visit() {
       <div className="section-kicker">Dónde encontrarnos</div>
       <div className={`visit-grid ${MAP_QUERY ? '' : 'solo'}`}>
         <div className="visit-info">
-          <h3>{s.name}</h3>
+          <h3><BrandName name={s.name} stacked /></h3>
           {(s.address || MAP_QUERY) && <p className="addr"><Pin /> {s.address || MAP_QUERY}</p>}
           {s.phone && <p className="addr">📞 <a href={`tel:${s.phone}`} style={{ color: 'inherit' }}>{s.phone}</a></p>}
           <div className="hrs">
