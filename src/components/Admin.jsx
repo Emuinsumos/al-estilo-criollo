@@ -3,7 +3,7 @@ import { DEFAULT_BOT } from '../config'
 import { useSettings } from '../settings'
 import { IS_DEMO, setValue, removeValue, newId, authSubscribe, loginUser, logoutUser, changeMyPassword } from '../store'
 import { useBotItems, useCategories, useNode, useOrders, useProducts, useReviews } from '../hooks'
-import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, waLink, waPhone } from '../utils'
+import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, uploadImage, waLink, waPhone } from '../utils'
 import ImageCropper from './ImageCropper'
 
 export default function Admin() {
@@ -286,10 +286,12 @@ function ProductForm({ initial, categories, onClose }) {
   const [p, setP] = useState(initial)
   const [file, setFile] = useState(null)
   const [err, setErr] = useState('')
+  const [uploading, setUploading] = useState(false)
   const set = (k, v) => setP((x) => ({ ...x, [k]: v }))
   const setVar = (i, k, v) => setP((x) => ({ ...x, variants: x.variants.map((r, j) => (j === i ? { ...r, [k]: v } : r)) }))
 
   const save = async () => {
+    if (uploading) return setErr('Esperá que termine de subir la foto.')
     const variants = p.variants
       .filter((v) => String(v.label).trim() && Number(v.price) > 0)
       .map((v) => ({ label: String(v.label).trim(), price: Number(v.price), ...(Number(v.offerPrice) > 0 ? { offerPrice: Number(v.offerPrice) } : {}) }))
@@ -350,10 +352,16 @@ function ProductForm({ initial, categories, onClose }) {
         </div>
         <div className="sticky-save">
           <button className="btn-ghost" onClick={onClose}>Cancelar</button>
-          <button className="btn-red" onClick={save}>Guardar producto</button>
+          <button className="btn-red" onClick={save} disabled={uploading}>{uploading ? 'Subiendo foto…' : 'Guardar producto'}</button>
         </div>
       </div>
-      {file && <ImageCropper file={file} onCancel={() => setFile(null)} onDone={(url) => { set('image', url); setFile(null) }} />}
+      {file && <ImageCropper file={file} onCancel={() => setFile(null)} onDone={async (url) => {
+        setFile(null)
+        setUploading(true)
+        setErr('')
+        try { set('image', await uploadImage(url)) } catch { setErr('No se pudo subir la foto. Revisá la conexión e intentá de nuevo.') }
+        setUploading(false)
+      }} />}
     </div>
   )
 }

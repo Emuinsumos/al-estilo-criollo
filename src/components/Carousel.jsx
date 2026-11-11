@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SLIDE_SECONDS } from '../config'
 import { useSettings } from '../settings'
-import { money, priceInfo } from '../utils'
+import { money, priceInfo, imgUrl } from '../utils'
 
 export default function Carousel({ products, onPick, loading }) {
   const s = useSettings()
@@ -59,7 +59,7 @@ export default function Carousel({ products, onPick, loading }) {
           const best = offerVars.reduce((a, b) => (b.info.price < a.info.price ? b : a))
           return (
             <div key={p.id} className={`slide ${idx === i ? 'active' : ''}`} aria-hidden={idx !== i}>
-              <div className="photo"><img src={p.image} alt={p.name} loading={idx === 0 ? 'eager' : 'lazy'} /><span className="pct-big">OFERTA</span></div>
+              <div className="photo"><img src={imgUrl(p.image, 800)} alt={p.name} loading={idx === 0 ? 'eager' : 'lazy'} /><span className="pct-big">OFERTA</span></div>
               <div className="copy">
                 <span className="chip-offer">Oferta de la semana</span>
                 <h2>{p.name}</h2>

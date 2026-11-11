@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '../cart'
 import { setValue, newId } from '../store'
 import { useSettings } from '../settings'
-import { money, openDates, slotsFor, fmtDate, makeCode, orderMessage, waLink } from '../utils'
+import { money, openDates, slotsFor, fmtDate, makeCode, orderMessage, waLink, imgUrl } from '../utils'
 
 const WaIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.8 11.8 0 0 0 12 0C5.4 0 .1 5.3.1 11.9c0 2.1.5 4.1 1.6 5.9L0 24l6.4-1.7a11.9 11.9 0 0 0 5.6 1.4c6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.200-3.4-8.300zM12 21.700c-1.800 0-3.500-.5-5-1.400l-.4-.2-3.800 1 1-3.700-.2-.4a9.800 9.800 0 0 1-1.500-5.200c0-5.400 4.400-9.800 9.900-9.800 2.600 0 5.100 1 6.900 2.900a9.700 9.700 0 0 1 2.900 6.900c0 5.400-4.400 9.900-9.800 9.900zm5.400-7.400c-.3-.1-1.800-.9-2-1s-.5-.1-.7.100-.8 1-.9 1.200-.3.200-.6.100a8 8 0 0 1-4-3.500c-.3-.5.3-.5.900-1.600.1-.2.100-.4 0-.5l-.9-2.200c-.2-.6-.5-.5-.7-.5h-.6a1.100 1.100 0 0 0-.8.400 3.400 3.400 0 0 0-1.100 2.500c0 1.500 1.100 2.900 1.200 3.100s2.100 3.200 5.100 4.500c1.900.8 2.600.9 3.500.7.600-.1 1.800-.7 2-1.400s.3-1.300.2-1.400-.3-.2-.6-.3z" /></svg>
@@ -96,7 +96,7 @@ export default function CartDrawer() {
               ) : (
                 lines.map((l) => (
                   <div className="line" key={l.key}>
-                    <img src={l.product.image} alt="" />
+                    <img src={imgUrl(l.product.image, 160)} alt="" />
                     <div>
                       <div className="nm">{l.product.name}</div>
                       <div className="sub">

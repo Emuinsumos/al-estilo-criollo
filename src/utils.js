@@ -1,4 +1,24 @@
-import { DAYS_AHEAD, CODE_PREFIX } from './config'
+import { DAYS_AHEAD, CODE_PREFIX, CLOUDINARY } from './config'
+
+// Foto liviana: si la imagen es de Cloudinary pide formato/calidad automáticos y ancho máximo.
+// Las fotos viejas (base64) se devuelven tal cual, así siguen funcionando.
+export function imgUrl(url, w = 640) {
+  if (typeof url === 'string' && url.includes('res.cloudinary.com') && url.includes('/upload/') && !url.includes('/upload/f_auto')) {
+    return url.replace('/upload/', `/upload/f_auto,q_auto,c_limit,w_${w}/`)
+  }
+  return url
+}
+
+// Sube una imagen (dataURL) a Cloudinary y devuelve la URL https.
+export async function uploadImage(dataUrl) {
+  const fd = new FormData()
+  fd.append('file', dataUrl)
+  fd.append('upload_preset', CLOUDINARY.preset)
+  const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: fd })
+  const j = await r.json()
+  if (!r.ok || !j.secure_url) throw new Error(j?.error?.message || 'No se pudo subir la imagen')
+  return j.secure_url
+}
 
 export const money = (n) => '$' + Math.round(Number(n) || 0).toLocaleString('es-AR')
 

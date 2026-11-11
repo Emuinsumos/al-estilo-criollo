@@ -33,6 +33,10 @@ export const FIREBASE_CONFIG = {
   appId: '1:772632398264:web:c20e9d76a02aa3214da74d',
 }
 
+// Fotos de productos: se suben a Cloudinary (cuenta propia de esta web) y en Firebase solo se guarda la URL.
+// El preset tiene que ser "Unsigned" y con carpeta "criollo".
+export const CLOUDINARY = { cloudName: 'oe32nzuw', preset: 'criollo_fotos' }
+
 // Todo se guarda bajo este prefijo, así no se mezcla con otros proyectos.
 export const DB_PREFIX = 'criollo'
 

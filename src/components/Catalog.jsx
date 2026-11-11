@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { norm, money, productSummary } from '../utils'
+import { norm, money, productSummary, imgUrl } from '../utils'
 import ProductModal from './ProductModal'
 
 function Card({ p, onOpen }) {
@@ -7,7 +7,7 @@ function Card({ p, onOpen }) {
   return (
     <button className="card" onClick={() => onOpen(p)} aria-label={`Ver ${p.name}`}>
       <div className="ph">
-        {p.image ? <img src={p.image} alt={p.name} loading="lazy" /> : null}
+        {p.image ? <img src={imgUrl(p.image, 480)} alt={p.name} loading="lazy" /> : null}
         {p.offer && s.isOffer && <span className="badge gold">OFERTA</span>}
         {p.soldOut && <div className="soldout-mask">Agotado</div>}
       </div>

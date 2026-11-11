@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../cart'
-import { money, priceInfo } from '../utils'
+import { money, priceInfo, imgUrl } from '../utils'
 
 export default function ProductModal({ product: p, onClose }) {
   const { dispatch, notify, setOpen } = useCart()
@@ -33,7 +33,7 @@ export default function ProductModal({ product: p, onClose }) {
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={p.name}>
         <button className="x-btn" onClick={onClose} aria-label="Cerrar">×</button>
         <div className="pimg" style={{ position: 'relative' }}>
-          {p.image && <img src={p.image} alt={p.name} />}
+          {p.image && <img src={imgUrl(p.image, 800)} alt={p.name} />}
           {p.offer && p.variants.some((v) => priceInfo(p, v).isOffer) && (
             <span className="badge">OFERTA</span>
           )}
