@@ -343,7 +343,7 @@ function ProductForm({ initial, categories, onClose }) {
           </div>
 
           <div style={{ display: 'grid', gap: 10, marginBottom: 16 }}>
-            <label className="switch"><input type="checkbox" checked={!!p.offer} onChange={(e) => set('offer', e.target.checked)} /><span><b>🔥 Oferta semanal</b><br /><span className="hint">Aparece en el carrusel. Muestra el precio normal tachado y el cartel de descuento (solo si el precio de oferta es menor).</span></span></label>
+            <label className="switch"><input type="checkbox" checked={!!p.offer} onChange={(e) => set('offer', e.target.checked)} /><span><b>🔥 Oferta semanal</b><br /><span className="hint">Aparece en el carrusel. Muestra el precio normal tachado y el cartel OFERTA (en cada cantidad que tenga precio de oferta menor al normal).</span></span></label>
             <label className="switch"><input type="checkbox" checked={!!p.soldOut} onChange={(e) => set('soldOut', e.target.checked)} /><span><b>Agotado</b><br /><span className="hint">Se ve en la web pero no se puede pedir.</span></span></label>
           </div>
           {err && <div className="err">{err}</div>}

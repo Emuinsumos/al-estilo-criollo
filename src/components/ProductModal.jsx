@@ -35,7 +35,7 @@ export default function ProductModal({ product: p, onClose }) {
         <div className="pimg" style={{ position: 'relative' }}>
           {p.image && <img src={p.image} alt={p.name} />}
           {p.offer && p.variants.some((v) => priceInfo(p, v).isOffer) && (
-            <span className="badge">OFERTA -{Math.max(...p.variants.map((v) => priceInfo(p, v).pct))}%</span>
+            <span className="badge">OFERTA</span>
           )}
         </div>
         <div className="pbody">

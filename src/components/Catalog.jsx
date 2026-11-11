@@ -8,7 +8,6 @@ function Card({ p, onOpen }) {
     <button className="card" onClick={() => onOpen(p)} aria-label={`Ver ${p.name}`}>
       <div className="ph">
         {p.image ? <img src={p.image} alt={p.name} loading="lazy" /> : null}
-        {s.isOffer && <span className="badge">-{s.pct}%</span>}
         {p.offer && s.isOffer && <span className="badge gold">OFERTA</span>}
         {p.soldOut && <div className="soldout-mask">Agotado</div>}
       </div>
