@@ -223,47 +223,6 @@ function Categories() {
   )
 }
 
-/* ---------- MIGRACIÓN TEMPORAL A CLOUDINARY (borrar este bloque y <MigratePhotos /> cuando termine) ---------- */
-function MigratePhotos({ products }) {
-  const s = useSettings()
-  const pending = products.filter((p) => typeof p.image === 'string' && p.image.startsWith('data:'))
-  const logoPending = typeof s.logo === 'string' && s.logo.startsWith('data:')
-  const total = pending.length + (logoPending ? 1 : 0)
-  const [st, setSt] = useState(null)
-  if (!total && !st) return null
-
-  const run = async () => {
-    if (!confirm(`Se van a subir ${total} foto(s) a Cloudinary. No borra nada si falla alguna. ¿Seguir?`)) return
-    let done = 0
-    let fail = 0
-    const list = [...pending.map((p) => ({ src: p.image, path: `products/${p.id}/image` }))]
-    if (logoPending) list.push({ src: s.logo, path: 'settings/logo' })
-    setSt({ done, fail, running: true })
-    for (const it of list) {
-      try {
-        const url = await uploadImage(it.src)
-        await setValue(it.path, url)
-        done++
-      } catch {
-        fail++
-      }
-      setSt({ done, fail, running: true })
-    }
-    setSt({ done, fail, running: false })
-  }
-
-  return (
-    <div className="ocard" style={{ borderLeftColor: 'var(--gold)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-      <span>
-        {st
-          ? `${st.running ? 'Migrando… ' : 'Listo. '}${st.done} subidas${st.fail ? ` · ${st.fail} con error` : ''}${st.running ? ` de ${total}` : ''}`
-          : `${total} foto(s) todavía están guardadas en Firebase.`}
-      </span>
-      {!st?.running && total > 0 && <button className="act warn" onClick={run}>{st ? 'Reintentar las que fallaron' : '☁ Migrar fotos a Cloudinary'}</button>}
-    </div>
-  )
-}
-
 /* ---------------- Productos ---------------- */
 function Products() {
   const { products } = useProducts()
@@ -294,7 +253,6 @@ function Products() {
           <button className="btn-red" style={{ width: 'auto', padding: '11px 22px' }} onClick={() => (categories.length ? setEdit(blank()) : alert('Primero creá al menos una categoría.'))}>+ Nuevo producto</button>
         </div>
       </div>
-      <MigratePhotos products={products} />
       {backup?.items && (
         <div className="ocard" style={{ borderLeftColor: 'var(--gold)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span>Último aumento: <b>{backup.pct > 0 ? '+' : ''}{backup.pct}%</b> en {Object.keys(backup.items).length} productos · {fmtDateTime(backup.ts)}</span>
