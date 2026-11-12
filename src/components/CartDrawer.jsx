@@ -17,7 +17,7 @@ export default function CartDrawer() {
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const dates = useMemo(() => (open ? openDates(st.hours, st.slotMinutes, st.leadMinutes) : []), [open, st.hours, st.slotMinutes, st.leadMinutes])
-  const [form, setForm] = useState({ name: '', lastName: '', phone: '', date: '', time: '', street: '', number: '', between1: '', between2: '', zoneId: '', dDate: '', dSlot: '' })
+  const [form, setForm] = useState({ name: '', lastName: '', phone: '', date: '', time: '', street: '', number: '', floor: '', apt: '', between1: '', between2: '', zoneId: '', dDate: '', dSlot: '' })
   const [mode, setMode] = useState('pickup') // pickup | delivery
 
   // datos de envío (solo se descargan con el carrito abierto)
@@ -68,12 +68,12 @@ export default function CartDrawer() {
     if (!form.name.trim() || !form.lastName.trim()) return setErr('Completá tu nombre y apellido.')
     if (digits.length < 8) return setErr('Revisá el teléfono (código de área + número).')
     const isDelivery = mode === 'delivery'
-    const fullAddress = `${form.street.trim()} ${form.number.trim()}${form.between1.trim() ? ` (entre ${form.between1.trim()} y ${form.between2.trim()})` : ''}`
+    const fullAddress = `${form.street.trim()} ${form.number.trim()}${form.floor.trim() ? `, piso ${form.floor.trim()}` : ''}${form.apt.trim() ? `, depto ${form.apt.trim()}` : ''} (entre ${form.between1.trim()} y ${form.between2.trim()})`
     let slot = null
     if (isDelivery) {
       if (form.street.trim().length < 2) return setErr('Completá la calle.')
       if (!form.number.trim()) return setErr('Completá la altura.')
-      if (!!form.between1.trim() !== !!form.between2.trim()) return setErr('Completá las dos calles de "Entre" o dejalas vacías.')
+      if (!form.between1.trim() || !form.between2.trim()) return setErr('Completá las dos calles de "Entre".')
       if (fullAddress.length < 6) return setErr('Revisá la dirección.')
       if (!zone) return setErr('Elegí tu zona de envío.')
       slot = dSlots.find((s) => s.id === form.dSlot)
@@ -100,7 +100,7 @@ export default function CartDrawer() {
       createdAt: Date.now(),
       total: grand,
       ...(isDelivery
-        ? { type: 'delivery', address: fullAddress, street: form.street.trim(), streetNumber: form.number.trim(), between1: form.between1.trim(), between2: form.between2.trim(), zoneId: zone.id, zoneName: zone.name, deliveryCost: shipping, deliveryDate: form.dDate, deliveryFrom: slot.from, deliveryTo: slot.to, deliverySlot: slot.id }
+        ? { type: 'delivery', address: fullAddress, street: form.street.trim(), streetNumber: form.number.trim(), floor: form.floor.trim(), apt: form.apt.trim(), between1: form.between1.trim(), between2: form.between2.trim(), zoneId: zone.id, zoneName: zone.name, deliveryCost: shipping, deliveryDate: form.dDate, deliveryFrom: slot.from, deliveryTo: slot.to, deliverySlot: slot.id }
         : { type: 'pickup' }),
       items: lines.map((l) => ({
         name: l.product.name,
@@ -198,6 +198,10 @@ export default function CartDrawer() {
                   <div className="two">
                     <div className="field"><label>Calle</label><input className="inp" value={form.street} onChange={set('street')} autoComplete="address-line1" /></div>
                     <div className="field"><label>Altura</label><input className="inp" value={form.number} onChange={set('number')} inputMode="numeric" /></div>
+                  </div>
+                  <div className="two">
+                    <div className="field"><label>Piso (opcional)</label><input className="inp" value={form.floor} onChange={set('floor')} /></div>
+                    <div className="field"><label>Depto (opcional)</label><input className="inp" value={form.apt} onChange={set('apt')} /></div>
                   </div>
                   <div className="two">
                     <div className="field"><label>Entre</label><input className="inp" value={form.between1} onChange={set('between1')} placeholder="Calle" /></div>
