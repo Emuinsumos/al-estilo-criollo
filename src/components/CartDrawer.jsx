@@ -156,6 +156,7 @@ export default function CartDrawer() {
               </div>
               <div className="tot" style={{ marginTop: 10 }}><span>Total estimado</span><b>{money(total)}</b></div>
               <p className="hint" style={{ marginTop: 6 }}>Retirás en el local. El pago se hace al retirar.</p>
+              <p className="hint" style={{ marginTop: 6 }}>El total es estimativo: puede haber pequeñas diferencias al pesar los productos.</p>
             </div>
             <footer>
               {err && <div className="err">{err}</div>}

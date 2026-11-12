@@ -452,3 +452,20 @@ a.btn-ghost, a.btn-ghost:visited { color: var(--cream); display: inline-flex; al
   .bot-fab { padding: 0; width: 52px; height: 52px; justify-content: center; bottom: 14px; right: 14px; }
   .bot-fab span { display: none; }
 }
+
+/* ---------- Envíos: agenda mensual ---------- */
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.cal-head b { font-family: var(--font-title); font-size: 20px; color: var(--gold2); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-w { text-align: center; color: var(--muted); font-family: var(--font-label); letter-spacing: 1px; font-size: 14px; padding: 4px 0; }
+.cal-day { min-height: 54px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); color: var(--cream); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 2px; }
+.cal-day b { font-size: 16px; }
+.cal-day span { font-size: 10px; color: var(--gold2); line-height: 1.1; }
+.cal-day.has { border-color: var(--gold); }
+.cal-day.past { opacity: .45; }
+.cal-day.today b { color: var(--gold2); text-decoration: underline; }
+.cal-day.sel { background: var(--red); border-color: transparent; }
+.cal-day.sel span { color: #fff; }
+.slot-row { display: grid; grid-template-columns: 1fr 1fr 80px auto; gap: 8px; align-items: end; margin-top: 10px; }
+.slot-row .field { margin: 0; }
+@media (max-width: 420px) { .slot-row { grid-template-columns: 1fr 1fr; } .slot-row .mini { grid-column: 1 / -1; } }
