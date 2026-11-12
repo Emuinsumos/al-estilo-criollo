@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_BOT } from '../config'
 import { useSettings } from '../settings'
-import { IS_DEMO, setValue, removeValue, newId, authSubscribe, loginUser, logoutUser, changeMyPassword } from '../store'
+import { IS_DEMO, setValue, removeValue, newId, adjustSlot, authSubscribe, loginUser, logoutUser, changeMyPassword } from '../store'
 import { useBotItems, useCategories, useNode, useOrders, useProducts, useReviews } from '../hooks'
 import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, uploadImage, waLink, waPhone } from '../utils'
 import ImageCropper from './ImageCropper'
@@ -115,13 +115,22 @@ function Orders({ orders }) {
   const count = (s) => orders.filter((o) => o.status === s).length
 
   const setStatus = (o, status) => {
+    // los envíos ocupan un cupo mientras no estén cancelados
+    if (o.type === 'delivery' && o.deliverySlot) {
+      const delta = (status !== 'cancelled' ? 1 : 0) - (o.status !== 'cancelled' ? 1 : 0)
+      if (delta) adjustSlot(o.deliveryDate, o.deliverySlot, delta)
+    }
     setValue(`orders/${o.id}/status`, status)
     setValue(`track/${o.code}/status`, status)
     // al completar: abre WhatsApp con el aviso listo para enviar
     if (status === 'completed') window.open(waLink(waPhone(o.phone), readyMessage(o, st.name)), '_blank')
   }
   const del = (o) => {
-    if (confirm(`¿Borrar definitivamente el pedido ${o.code}?`)) { removeValue(`orders/${o.id}`); removeValue(`track/${o.code}`) }
+    if (confirm(`¿Borrar definitivamente el pedido ${o.code}?`)) {
+      if (o.type === 'delivery' && o.deliverySlot && o.status !== 'cancelled') adjustSlot(o.deliveryDate, o.deliverySlot, -1)
+      removeValue(`orders/${o.id}`)
+      removeValue(`track/${o.code}`)
+    }
   }
 
   return (
@@ -151,7 +160,14 @@ function Orders({ orders }) {
             <span className={`pill ${o.status}`}>{STATUS[o.status]}</span>
           </div>
           <div><b>{o.name} {o.lastName}</b> · <a href={`tel:${o.phone}`} style={{ color: 'var(--gold2)' }}>{o.phone}</a></div>
-          <div className="meta">Retira: <b style={{ color: 'var(--cream)' }}>{fmtDate(o.pickupDate)} · {o.pickupTime} hs</b></div>
+          {o.type === 'delivery' ? (
+            <>
+              <div className="meta">🚚 <b style={{ color: 'var(--gold2)' }}>ENVÍO</b> · <b style={{ color: 'var(--cream)' }}>{fmtDate(o.deliveryDate)} · {o.deliveryFrom} a {o.deliveryTo} hs</b></div>
+              <div className="meta">📍 <b style={{ color: 'var(--cream)' }}>{o.address}</b> · {o.zoneName} ({money(o.deliveryCost)})</div>
+            </>
+          ) : (
+            <div className="meta">Retira: <b style={{ color: 'var(--cream)' }}>{fmtDate(o.pickupDate)} · {o.pickupTime} hs</b></div>
+          )}
           <ul>
             {o.items.map((i, k) => (
               <li key={k}>

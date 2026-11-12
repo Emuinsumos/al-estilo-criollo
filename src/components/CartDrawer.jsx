@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '../cart'
-import { setValue, newId } from '../store'
+import { setValue, newId, reserveSlot } from '../store'
+import { useNode } from '../hooks'
 import { useSettings } from '../settings'
-import { money, openDates, slotsFor, fmtDate, makeCode, orderMessage, waLink, imgUrl } from '../utils'
+import { money, openDates, slotsFor, fmtDate, makeCode, orderMessage, waLink, imgUrl, deliveryDates, deliverySlotsFor } from '../utils'
 
 const WaIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.8 11.8 0 0 0 12 0C5.4 0 .1 5.3.1 11.9c0 2.1.5 4.1 1.6 5.9L0 24l6.4-1.7a11.9 11.9 0 0 0 5.6 1.4c6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.200-3.4-8.300zM12 21.700c-1.800 0-3.500-.5-5-1.400l-.4-.2-3.800 1 1-3.700-.2-.4a9.800 9.800 0 0 1-1.500-5.200c0-5.400 4.400-9.800 9.900-9.800 2.600 0 5.100 1 6.900 2.900a9.700 9.700 0 0 1 2.900 6.900c0 5.400-4.400 9.900-9.800 9.900zm5.400-7.400c-.3-.1-1.800-.9-2-1s-.5-.1-.7.100-.8 1-.9 1.200-.3.200-.6.100a8 8 0 0 1-4-3.500c-.3-.5.3-.5.900-1.600.1-.2.100-.4 0-.5l-.9-2.200c-.2-.6-.5-.5-.7-.5h-.6a1.100 1.100 0 0 0-.8.400 3.400 3.400 0 0 0-1.100 2.500c0 1.500 1.100 2.900 1.200 3.100s2.100 3.200 5.100 4.500c1.900.8 2.600.9 3.500.7.600-.1 1.800-.7 2-1.400s.3-1.300.2-1.400-.3-.2-.6-.3z" /></svg>
@@ -16,7 +17,24 @@ export default function CartDrawer() {
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const dates = useMemo(() => (open ? openDates(st.hours, st.slotMinutes, st.leadMinutes) : []), [open, st.hours, st.slotMinutes, st.leadMinutes])
-  const [form, setForm] = useState({ name: '', lastName: '', phone: '', date: '', time: '' })
+  const [form, setForm] = useState({ name: '', lastName: '', phone: '', date: '', time: '', addr: '', zoneId: '', dDate: '', dSlot: '' })
+  const [mode, setMode] = useState('pickup') // pickup | delivery
+
+  // datos de envío (solo se descargan con el carrito abierto)
+  const zonesRaw = useNode(open ? 'delivery/zones' : 'delivery/_off')
+  const schedRaw = useNode(open ? 'delivery/schedule' : 'delivery/_off')
+  const loadRaw = useNode(open ? 'delivery/load' : 'delivery/_off')
+  const zones = useMemo(
+    () => Object.entries(zonesRaw || {}).map(([id, z]) => ({ ...z, id })).filter((z) => z.active !== false && z.name).sort((a, b) => (a.order || 0) - (b.order || 0)),
+    [zonesRaw]
+  )
+  const dDates = useMemo(() => (open ? deliveryDates(schedRaw, loadRaw) : []), [open, schedRaw, loadRaw])
+  const dSlots = useMemo(() => (open ? deliverySlotsFor(schedRaw, loadRaw, form.dDate) : []), [open, schedRaw, loadRaw, form.dDate])
+  const hasZones = zones.length > 0
+  const canDeliver = hasZones && dDates.length > 0
+  const zone = zones.find((z) => z.id === form.zoneId)
+  const shipping = mode === 'delivery' && zone ? Number(zone.cost) || 0 : 0
+  const grand = total + shipping
 
   const slots = useMemo(() => slotsFor(form.date, st.hours, st.slotMinutes, st.leadMinutes), [form.date, st.hours, st.slotMinutes, st.leadMinutes])
 
@@ -29,32 +47,57 @@ export default function CartDrawer() {
     if (open && view === 'form' && !form.date && dates.length) setForm((f) => ({ ...f, date: dates[0], time: '' }))
   }, [open, view, dates, form.date])
 
+  useEffect(() => {
+    if (mode !== 'delivery') return
+    if (!canDeliver) return setMode('pickup')
+    if (!dDates.includes(form.dDate)) setForm((f) => ({ ...f, dDate: dDates[0], dSlot: '' }))
+    else if (form.dSlot && !dSlots.some((s) => s.id === form.dSlot)) setForm((f) => ({ ...f, dSlot: '' }))
+    if (zones.length === 1 && form.zoneId !== zones[0].id) setForm((f) => ({ ...f, zoneId: zones[0].id }))
+  }, [mode, canDeliver, dDates, dSlots, zones, form.dDate, form.dSlot, form.zoneId])
+
   if (!open) return null
   const close = () => {
     setOpen(false)
     if (view === 'done') { setView('cart'); setDone(null) }
   }
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value, ...(k === 'date' ? { time: '' } : {}) }))
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value, ...(k === 'date' ? { time: '' } : {}), ...(k === 'dDate' ? { dSlot: '' } : {}) }))
 
   const submit = async () => {
     setErr('')
     const digits = form.phone.replace(/\D/g, '')
     if (!form.name.trim() || !form.lastName.trim()) return setErr('Completá tu nombre y apellido.')
     if (digits.length < 8) return setErr('Revisá el teléfono (código de área + número).')
-    if (!form.date || !form.time) return setErr('Elegí día y horario aproximado de retiro.')
+    const isDelivery = mode === 'delivery'
+    let slot = null
+    if (isDelivery) {
+      if (form.addr.trim().length < 6) return setErr('Completá tu dirección (calle, número y piso/depto).')
+      if (!zone) return setErr('Elegí tu zona de envío.')
+      slot = dSlots.find((s) => s.id === form.dSlot)
+      if (!form.dDate || !slot) return setErr('Elegí día y rango horario de entrega.')
+    } else if (!form.date || !form.time) return setErr('Elegí día y horario aproximado de retiro.')
     if (!lines.length) return setErr('Tu pedido está vacío.')
     setBusy(true)
+    if (isDelivery) {
+      // primero se reserva el cupo (si dos personas toman el último, solo una lo consigue)
+      let ok = false
+      try { ok = await reserveSlot(form.dDate, slot.id, slot.cap) } catch { ok = null }
+      if (ok === null) { setBusy(false); return setErr('No pudimos reservar el horario. Probá de nuevo en un momento.') }
+      if (!ok) { setBusy(false); setForm((f) => ({ ...f, dSlot: '' })); return setErr('Ese rango horario se acaba de llenar. Elegí otro.') }
+    }
     const order = {
       id: newId(),
       code: makeCode(),
       name: form.name.trim(),
       lastName: form.lastName.trim(),
       phone: form.phone.trim(),
-      pickupDate: form.date,
-      pickupTime: form.time,
+      pickupDate: isDelivery ? form.dDate : form.date,
+      pickupTime: isDelivery ? `${slot.from} a ${slot.to}` : form.time,
       status: 'pending',
       createdAt: Date.now(),
-      total,
+      total: grand,
+      ...(isDelivery
+        ? { type: 'delivery', address: form.addr.trim(), zoneId: zone.id, zoneName: zone.name, deliveryCost: shipping, deliveryDate: form.dDate, deliveryFrom: slot.from, deliveryTo: slot.to, deliverySlot: slot.id }
+        : { type: 'pickup' }),
       items: lines.map((l) => ({
         name: l.product.name,
         variant: l.variant.label,
@@ -67,7 +110,7 @@ export default function CartDrawer() {
       await setValue(`orders/${order.id}`, order)
       await setValue(`track/${order.code}`, {
         code: order.code, firstName: order.name, status: 'pending',
-        pickupDate: order.pickupDate, pickupTime: order.pickupTime, total: order.total, createdAt: order.createdAt,
+        type: order.type, pickupDate: order.pickupDate, pickupTime: order.pickupTime, total: order.total, createdAt: order.createdAt,
       })
       try { localStorage.setItem('criollo-last-code', order.code) } catch {}
       setDone(order)
@@ -130,6 +173,13 @@ export default function CartDrawer() {
         {view === 'form' && (
           <>
             <div className="scroll">
+              {hasZones && (
+                <div className="mode-sw">
+                  <button type="button" className={mode === 'pickup' ? 'on' : ''} onClick={() => setMode('pickup')}>🏪 Retiro en tienda</button>
+                  <button type="button" className={mode === 'delivery' ? 'on' : ''} disabled={!canDeliver} onClick={() => setMode('delivery')}>🚚 Envío a domicilio</button>
+                </div>
+              )}
+              {hasZones && !canDeliver && <p className="hint" style={{ margin: '-6px 0 12px' }}>Por ahora no hay turnos de envío disponibles. Podés retirar en el local.</p>}
               <div className="two">
                 <div className="field"><label>Nombre</label><input className="inp" value={form.name} onChange={set('name')} autoComplete="given-name" /></div>
                 <div className="field"><label>Apellido</label><input className="inp" value={form.lastName} onChange={set('lastName')} autoComplete="family-name" /></div>
@@ -139,23 +189,55 @@ export default function CartDrawer() {
                 <input className="inp" type="tel" inputMode="tel" placeholder="11 2345 6789" value={form.phone} onChange={set('phone')} autoComplete="tel" />
                 <span className="hint">Código de área sin 0 y sin 15.</span>
               </div>
-              <div className="two">
-                <div className="field">
-                  <label>Día de retiro</label>
-                  <select className="inp" value={form.date} onChange={set('date')}>
-                    {dates.map((d) => <option key={d} value={d}>{fmtDate(d)}</option>)}
-                  </select>
+              {mode === 'delivery' ? (
+                <>
+                  <div className="field">
+                    <label>Dirección</label>
+                    <input className="inp" value={form.addr} onChange={set('addr')} placeholder="Calle, número, piso/depto, entre calles" autoComplete="street-address" />
+                  </div>
+                  <div className="field">
+                    <label>Zona de envío</label>
+                    <select className="inp" value={form.zoneId} onChange={set('zoneId')}>
+                      <option value="">Elegir…</option>
+                      {zones.map((z) => <option key={z.id} value={z.id}>{z.name} — {Number(z.cost) > 0 ? money(z.cost) : 'envío gratis'}</option>)}
+                    </select>
+                  </div>
+                  <div className="two">
+                    <div className="field">
+                      <label>Día de entrega</label>
+                      <select className="inp" value={form.dDate} onChange={set('dDate')}>
+                        {dDates.map((d) => <option key={d} value={d}>{fmtDate(d)}</option>)}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label>Rango horario</label>
+                      <select className="inp" value={form.dSlot} onChange={set('dSlot')}>
+                        <option value="">Elegir…</option>
+                        {dSlots.map((s) => <option key={s.id} value={s.id}>{s.from} a {s.to} hs</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {zone && <div className="tot" style={{ marginTop: 6 }}><span>Envío</span><b style={{ fontSize: 18 }}>{money(shipping)}</b></div>}
+                </>
+              ) : (
+                <div className="two">
+                  <div className="field">
+                    <label>Día de retiro</label>
+                    <select className="inp" value={form.date} onChange={set('date')}>
+                      {dates.map((d) => <option key={d} value={d}>{fmtDate(d)}</option>)}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label>Hora aprox.</label>
+                    <select className="inp" value={form.time} onChange={set('time')}>
+                      <option value="">Elegir…</option>
+                      {slots.map((s) => <option key={s} value={s}>{s} hs</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div className="field">
-                  <label>Hora aprox.</label>
-                  <select className="inp" value={form.time} onChange={set('time')}>
-                    <option value="">Elegir…</option>
-                    {slots.map((s) => <option key={s} value={s}>{s} hs</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="tot" style={{ marginTop: 10 }}><span>Total estimado</span><b>{money(total)}</b></div>
-              <p className="hint" style={{ marginTop: 6 }}>Retirás en el local. El pago se hace al retirar.</p>
+              )}
+              <div className="tot" style={{ marginTop: 10 }}><span>Total estimado</span><b>{money(grand)}</b></div>
+              <p className="hint" style={{ marginTop: 6 }}>{mode === 'delivery' ? 'Te lo llevamos en el rango horario elegido.' : 'Retirás en el local. El pago se hace al retirar.'}</p>
               <p className="hint" style={{ marginTop: 6 }}>El total es estimativo: puede haber pequeñas diferencias al pesar los productos.</p>
             </div>
             <footer>
@@ -170,10 +252,14 @@ export default function CartDrawer() {
           <>
             <div className="scroll" style={{ textAlign: 'center' }}>
               <div className="checkmark">✓</div>
-              <p>Gracias {done.name}. Tu código de retiro es:</p>
+              <p>Gracias {done.name}. Tu código de {done.type === 'delivery' ? 'pedido' : 'retiro'} es:</p>
               <div className="ticket">
                 <div className="code">{done.code}</div>
-                <div className="hint" style={{ marginTop: 6 }}>Mostralo al retirar · {fmtDate(done.pickupDate)} {done.pickupTime} hs aprox.</div>
+                <div className="hint" style={{ marginTop: 6 }}>
+                  {done.type === 'delivery'
+                    ? `Envío: ${fmtDate(done.deliveryDate)} entre ${done.deliveryFrom} y ${done.deliveryTo} hs`
+                    : `Mostralo al retirar · ${fmtDate(done.pickupDate)} ${done.pickupTime} hs aprox.`}
+                </div>
               </div>
               <p className="hint">Tocá el botón verde para enviarnos el pedido por WhatsApp y que lo preparemos. Te avisamos por ahí cuando esté listo.</p>
             </div>

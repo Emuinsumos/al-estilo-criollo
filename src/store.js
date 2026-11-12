@@ -1,6 +1,6 @@
 // Capa de datos: Firebase Realtime Database, o MODO DEMO (localStorage) si no hay config.
 import { initializeApp } from 'firebase/app'
-import { getDatabase, ref, onValue, set as fbSet, remove as fbRemove } from 'firebase/database'
+import { getDatabase, ref, onValue, set as fbSet, remove as fbRemove, runTransaction } from 'firebase/database'
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from 'firebase/auth'
 import { FIREBASE_CONFIG, DB_PREFIX, ADMIN, AUTH_DOMAIN } from './config'
 import { uid } from './utils'
@@ -105,6 +105,29 @@ export function removeValue(path) {
   const p = full(path)
   if (IS_DEMO) return Promise.resolve(setPath(p, null))
   return fbRemove(ref(db, p))
+}
+
+// ---------- cupos de envío ----------
+// Reserva 1 cupo de un rango. true = lo logró; false = el rango ya está lleno.
+export async function reserveSlot(date, slotId, cap) {
+  const p = full(`delivery/load/${date}/${slotId}`)
+  if (IS_DEMO) {
+    const cur = Number(getPath(p)) || 0
+    if (cur >= cap) return false
+    setPath(p, cur + 1)
+    return true
+  }
+  const r = await runTransaction(ref(db, p), (cur) => {
+    const n = Number(cur) || 0
+    return n >= cap ? undefined : n + 1
+  })
+  return r.committed
+}
+// Suma o resta cupos ocupados (lo usa el admin al cancelar, reactivar o borrar un pedido).
+export async function adjustSlot(date, slotId, delta) {
+  const p = full(`delivery/load/${date}/${slotId}`)
+  if (IS_DEMO) return setPath(p, Math.max(0, (Number(getPath(p)) || 0) + delta))
+  await runTransaction(ref(db, p), (cur) => Math.max(0, (Number(cur) || 0) + delta))
 }
 
 export const newId = uid

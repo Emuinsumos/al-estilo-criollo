@@ -469,3 +469,9 @@ a.btn-ghost, a.btn-ghost:visited { color: var(--cream); display: inline-flex; al
 .slot-row { display: grid; grid-template-columns: 1fr 1fr 80px auto; gap: 8px; align-items: end; margin-top: 10px; }
 .slot-row .field { margin: 0; }
 @media (max-width: 420px) { .slot-row { grid-template-columns: 1fr 1fr; } .slot-row .mini { grid-column: 1 / -1; } }
+
+/* ---------- Checkout: retiro / envío ---------- */
+.mode-sw { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.mode-sw button { padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--muted); font-family: var(--font-label); letter-spacing: 1px; text-transform: uppercase; font-size: 15px; }
+.mode-sw button.on { background: var(--red); color: #fff; border-color: transparent; }
+.mode-sw button:disabled { opacity: .4; }

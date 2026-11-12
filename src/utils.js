@@ -101,6 +101,25 @@ export function openDates(HOURS, SLOT_MINUTES, MIN_LEAD_MINUTES) {
   return out
 }
 
+// ---------- envío a domicilio: rangos con cupo libre ----------
+export const DELIVERY_LEAD_MIN = 60 // el rango de hoy deja de ofrecerse 60 min antes de que empiece
+export function deliverySlotsFor(sched, load, date, leadMin = DELIVERY_LEAD_MIN) {
+  const now = new Date()
+  const today = ymd(now)
+  if (!date || date < today) return []
+  const nowMin = now.getHours() * 60 + now.getMinutes() + leadMin
+  return Object.entries((sched && sched[date]) || {})
+    .map(([id, s]) => {
+      const cap = Number(s.cap) || 0
+      return { id, from: s.from, to: s.to, cap, left: cap - (Number(load?.[date]?.[id]) || 0) }
+    })
+    .filter((s) => s.left > 0 && (date !== today || toMin(s.from) >= nowMin))
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)))
+}
+export function deliveryDates(sched, load, leadMin = DELIVERY_LEAD_MIN) {
+  return Object.keys(sched || {}).filter((d) => deliverySlotsFor(sched, load, d, leadMin).length).sort()
+}
+
 const DAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
 export function fmtDate(dateStr) {
   if (!dateStr) return ''
@@ -140,16 +159,26 @@ export function orderMessage(o, brand = 'Al Estilo Criollo') {
     ``,
     `👤 ${o.name} ${o.lastName}`,
     `📞 ${o.phone}`,
-    `🕒 Retira: ${fmtDate(o.pickupDate)} a las ${o.pickupTime} hs aprox.`,
+    ...(o.type === 'delivery'
+      ? [
+          `🚚 *ENVÍO A DOMICILIO*`,
+          `📍 ${o.address}`,
+          `🗺️ Zona: ${o.zoneName}`,
+          `🕒 ${fmtDate(o.deliveryDate)} entre ${o.deliveryFrom} y ${o.deliveryTo} hs`,
+        ]
+      : [`🕒 Retira: ${fmtDate(o.pickupDate)} a las ${o.pickupTime} hs aprox.`]),
     ``,
     ...lines,
     ``,
+    ...(o.type === 'delivery' ? [`Envío: ${money(o.deliveryCost)}`] : []),
     `*Total estimado: ${money(o.total)}*`,
     `_(El importe final se confirma al pesar)_`,
   ].join('\n')
 }
 
 export function readyMessage(o, brand = 'Al Estilo Criollo') {
+  if (o.type === 'delivery')
+    return `Hola ${o.name}! 🥩 Tu pedido *${o.code}* de ${brand} ya está preparado. Te lo llevamos el ${fmtDate(o.deliveryDate)} entre ${o.deliveryFrom} y ${o.deliveryTo} hs a ${o.address}. ¡Gracias por elegirnos!`
   return `Hola ${o.name}! 🥩 Tu pedido *${o.code}* de ${brand} ya está preparado. Podés pasar a retirarlo en cualquier momento con tu código de compra: *${o.code}*. ¡Gracias por elegirnos!`
 }
 

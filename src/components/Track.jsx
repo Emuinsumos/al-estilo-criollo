@@ -7,6 +7,11 @@ const STEPS = [
   { k: 'completed', t: 'Listo para retirar', d: 'Pasá por el local con tu código.' },
 ]
 
+const STEPS_DELIVERY = [
+  { k: 'pending', t: 'Recibido', d: 'Estamos preparando tu pedido.' },
+  { k: 'completed', t: 'Listo para enviar', d: 'Te lo llevamos en el rango horario elegido.' },
+]
+
 export default function Track() {
   const [input, setInput] = useState(() => {
     try { return localStorage.getItem('criollo-last-code') || '' } catch { return '' }
@@ -41,14 +46,18 @@ export default function Track() {
           <div className="head">
             <div>
               <div className="code">{data.code}</div>
-              <div className="meta">Hola {data.firstName} · Retiro: {fmtDate(data.pickupDate)} {data.pickupTime} hs aprox. · {money(data.total)}</div>
+              <div className="meta">
+                Hola {data.firstName} · {data.type === 'delivery'
+                  ? `Envío: ${fmtDate(data.pickupDate)} ${data.pickupTime} hs`
+                  : `Retiro: ${fmtDate(data.pickupDate)} ${data.pickupTime} hs aprox.`} · {money(data.total)}
+              </div>
             </div>
           </div>
           {data.status === 'cancelled' ? (
             <p className="track-msg" style={{ color: '#ff9b9b' }}>Este pedido fue cancelado. Escribinos por WhatsApp si tenés dudas.</p>
           ) : (
             <ol className="steps">
-              {STEPS.map((s, i) => {
+              {(data.type === 'delivery' ? STEPS_DELIVERY : STEPS).map((s, i) => {
                 const done = data.status === 'completed' || i === 0
                 const current = (data.status === 'pending' && i === 0) || (data.status === 'completed' && i === 1)
                 return (

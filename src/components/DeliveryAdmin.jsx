@@ -84,6 +84,7 @@ function Zones() {
 /* ---------------- Agenda mensual ---------------- */
 function Agenda() {
   const raw = useNode('delivery/schedule')
+  const load = useNode('delivery/load')
   const now = new Date()
   const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() })
   const [sel, setSel] = useState(null) // 'YYYY-MM-DD'
@@ -125,6 +126,8 @@ function Agenda() {
       if (!/^\d{2}:\d{2}$/.test(s.from || '') || !/^\d{2}:\d{2}$/.test(s.to || '')) return { error: 'Completá desde y hasta en cada rango.' }
       if (s.from >= s.to) return { error: `El rango ${s.from} a ${s.to} es inválido: "desde" tiene que ser antes que "hasta".` }
       if (!(cap >= 1)) return { error: 'Los cupos tienen que ser 1 o más.' }
+      const used = Number(load?.[sel]?.[s.id]) || 0
+      if (cap < used) return { error: `El rango ${s.from} a ${s.to} ya tiene ${used} pedidos: los cupos no pueden ser menos.` }
       out[s.id] = { from: s.from, to: s.to, cap }
     }
     const list = Object.values(out).sort((a, b) => a.from.localeCompare(b.from))
@@ -204,7 +207,7 @@ function Agenda() {
             <div key={s.id} className="slot-row">
               <div className="field"><label>Desde</label><input className="inp" type="time" value={s.from} onChange={(e) => edit(s.id, 'from', e.target.value)} /></div>
               <div className="field"><label>Hasta</label><input className="inp" type="time" value={s.to} onChange={(e) => edit(s.id, 'to', e.target.value)} /></div>
-              <div className="field"><label>Cupos</label><input className="inp" type="number" inputMode="numeric" min="1" value={s.cap} onChange={(e) => edit(s.id, 'cap', e.target.value)} /></div>
+              <div className="field"><label>Cupos{load?.[sel]?.[s.id] ? ` (${load[sel][s.id]} ocupados)` : ''}</label><input className="inp" type="number" inputMode="numeric" min="1" value={s.cap} onChange={(e) => edit(s.id, 'cap', e.target.value)} /></div>
               <button className="mini del" onClick={() => rmSlot(s.id)} aria-label="Quitar rango">✕</button>
             </div>
           ))}

@@ -18,16 +18,31 @@
       "settings": { ".read": true },
       "reviews": { ".read": true },
       "botItems": { ".read": true },
+      "delivery": {
+        "zones": { ".read": true },
+        "schedule": { ".read": true },
+        "load": {
+          ".read": true,
+          "$date": {
+            "$slot": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1 && newData.val() <= root.child('criollo/delivery/schedule').child($date).child($slot).child('cap').val()"
+            }
+          }
+        }
+      },
       "orders": {
         "$id": {
           ".write": "!data.exists() && newData.exists()",
-          ".validate": "newData.hasChildren(['code','name','lastName','phone','pickupDate','pickupTime','total','items','status','createdAt']) && (data.exists() || newData.child('status').val() === 'pending')",
+          ".validate": "newData.hasChildren(['code','name','lastName','phone','pickupDate','pickupTime','total','items','status','createdAt']) && (data.exists() || newData.child('status').val() === 'pending') && (newData.child('type').val() !== 'delivery' || (newData.hasChildren(['address','zoneId','zoneName','deliveryCost','deliveryDate','deliverySlot']) && newData.child('deliveryCost').val() === root.child('criollo/delivery/zones').child(newData.child('zoneId').val()).child('cost').val()))",
           "code": { ".validate": "newData.isString() && newData.val().length < 16" },
           "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 60" },
           "lastName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 60" },
           "phone": { ".validate": "newData.isString() && newData.val().length > 5 && newData.val().length < 40" },
           "pickupDate": { ".validate": "newData.isString() && newData.val().length < 12" },
-          "pickupTime": { ".validate": "newData.isString() && newData.val().length < 8" },
+          "pickupTime": { ".validate": "newData.isString() && newData.val().length < 20" },
+          "type": { ".validate": "newData.val() === 'pickup' || newData.val() === 'delivery'" },
+          "address": { ".validate": "newData.isString() && newData.val().length > 5 && newData.val().length < 200" },
+          "deliveryCost": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 10000000" },
           "total": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 100000000" },
           "status": { ".validate": "newData.val() === 'pending' || newData.val() === 'completed' || newData.val() === 'cancelled'" }
         }
