@@ -38,3 +38,12 @@ export function useBotItems() {
   const list = useMemo(() => toList(raw).filter((x) => x.q && x.a).sort((a, b) => (a.order || 0) - (b.order || 0)), [raw])
   return { items: list, isDefault: raw === null, loading: raw === undefined }
 }
+
+export function usePromos() {
+  const raw = useNode('promos')
+  const list = useMemo(
+    () => toList(raw).map((p) => ({ ...p, items: Object.values(p.items || {}) })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)),
+    [raw]
+  )
+  return { promos: list, loading: raw === undefined }
+}

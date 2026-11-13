@@ -475,3 +475,30 @@ a.btn-ghost, a.btn-ghost:visited { color: var(--cream); display: inline-flex; al
 .mode-sw button { padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--muted); font-family: var(--font-label); letter-spacing: 1px; text-transform: uppercase; font-size: 15px; }
 .mode-sw button.on { background: var(--red); color: #fff; border-color: transparent; }
 .mode-sw button:disabled { opacity: .4; }
+
+/* ---------- PROMOS (sección destacada) ---------- */
+.promos { padding: 34px 0 28px; background: linear-gradient(180deg, rgba(200,154,43,.14), rgba(200,154,43,0) 85%); border-top: 1px solid var(--gold); }
+.promos-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.promos-head .flame { font-size: 26px; }
+.promos-head h2 { font-family: var(--font-title); font-size: 34px; letter-spacing: 3px; color: var(--gold2); line-height: 1; }
+.promos-head .sub { color: var(--muted); font-family: var(--font-label); letter-spacing: 1.5px; text-transform: uppercase; font-size: 13px; }
+.promo-scroll { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 320px); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 12px; -webkit-overflow-scrolling: touch; }
+.promo { scroll-snap-align: start; background: var(--panel); border: 1px solid var(--gold); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.promo .ph { position: relative; aspect-ratio: 4 / 3; background: #120d0a; }
+.promo .ph img { width: 100%; height: 100%; object-fit: cover; }
+.promo .ph-empty { width: 100%; height: 100%; display: grid; place-items: center; font-family: var(--font-title); font-size: 38px; letter-spacing: 6px; color: var(--gold); }
+.promo .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.promo h3 { font-family: var(--font-title); font-size: 21px; line-height: 1.2; }
+.promo .d { color: var(--muted); font-size: 14px; }
+.promo .inc { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: 14px; }
+.promo .inc li b { color: var(--gold2); }
+.promo .inc li span { color: var(--muted); }
+.promo .pr { margin-top: auto; padding-top: 6px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.promo .pr .now { font-family: var(--font-title); font-size: 30px; font-weight: 700; color: var(--gold2); }
+.promo .pr .was { text-decoration: line-through; color: var(--muted); font-size: 15px; }
+.promo .cta { background: var(--red); color: #fff; border-radius: 8px; padding: 11px; text-align: center; font-family: var(--font-label); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-size: 14px; }
+
+/* PROMOS (admin) */
+.promo-row { display: grid; grid-template-columns: 1.4fr 1.2fr 80px auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.promo-row .qty-in { display: flex; align-items: center; gap: 4px; }
+@media (max-width: 560px) { .promo-row { grid-template-columns: 1fr 1fr; } .promo-row .qty-in { grid-column: 1; } }

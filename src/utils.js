@@ -101,6 +101,21 @@ export function openDates(HOURS, SLOT_MINUTES, MIN_LEAD_MINUTES) {
   return out
 }
 
+// ---------- promos ----------
+// Cruza una promo con el catálogo actual. ok=false si algún producto se borró, se agotó
+// o ya no existe la presentación elegida (la promo se oculta sola hasta que se arregle).
+export function promoInfo(promo, products) {
+  const rows = Object.values(promo.items || {}).map((it) => {
+    const product = products.find((p) => p.id === it.productId)
+    const variant = product?.variants?.find((v) => v.label === it.label)
+    return { ...it, qty: Number(it.qty) || 1, product, variant, missing: !product || !variant, soldOut: !!product?.soldOut }
+  })
+  const ok = rows.length > 0 && rows.every((r) => !r.missing && !r.soldOut)
+  const regular = rows.reduce((s, r) => s + (r.variant ? priceInfo(r.product, r.variant).price * r.qty : 0), 0)
+  const summary = rows.map((r) => `${r.qty} × ${r.product?.name || '(producto borrado)'} (${r.label})`).join(' + ')
+  return { rows, ok, regular, summary }
+}
+
 // ---------- envío a domicilio: rangos con cupo libre ----------
 export const DELIVERY_LEAD_MIN = 60 // el rango de hoy deja de ofrecerse 60 min antes de que empiece
 export function deliverySlotsFor(sched, load, date, leadMin = DELIVERY_LEAD_MIN) {

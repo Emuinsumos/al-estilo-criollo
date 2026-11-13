@@ -6,6 +6,7 @@ import { useBotItems, useCategories, useNode, useOrders, useProducts, useReviews
 import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, uploadImage, waLink, waPhone } from '../utils'
 import ImageCropper from './ImageCropper'
 import DeliveryAdmin from './DeliveryAdmin'
+import PromosAdmin from './PromosAdmin'
 
 export default function Admin() {
   const s = useSettings()
@@ -76,6 +77,7 @@ function Panel({ onExit, username }) {
         <div className="tabs">
           <button className={`tab ${tab === 'orders' ? 'on' : ''}`} onClick={() => setTab('orders')}>Pedidos {pending > 0 && <span className="n">{pending}</span>}</button>
           <button className={`tab ${tab === 'delivery' ? 'on' : ''}`} onClick={() => setTab('delivery')}>Envíos</button>
+          <button className={`tab ${tab === 'promos' ? 'on' : ''}`} onClick={() => setTab('promos')}>Promos</button>
           <button className={`tab ${tab === 'products' ? 'on' : ''}`} onClick={() => setTab('products')}>Productos</button>
           <button className={`tab ${tab === 'cats' ? 'on' : ''}`} onClick={() => setTab('cats')}>Categorías</button>
           <button className={`tab ${tab === 'reviews' ? 'on' : ''}`} onClick={() => setTab('reviews')}>Reseñas</button>
@@ -85,6 +87,7 @@ function Panel({ onExit, username }) {
         <div className="adm-body">
           {tab === 'orders' && <Orders orders={orders} />}
           {tab === 'delivery' && <DeliveryAdmin />}
+          {tab === 'promos' && <PromosAdmin />}
           {tab === 'products' && <Products />}
           {tab === 'cats' && <Categories />}
           {tab === 'reviews' && <ReviewsAdmin />}

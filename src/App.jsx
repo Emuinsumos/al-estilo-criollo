@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useCategories, useProducts } from './hooks'
+import { useCategories, useProducts, usePromos } from './hooks'
 import { CartProvider, useCart } from './cart'
 import { SettingsProvider } from './settings'
 import Bot from './components/Bot'
@@ -8,6 +8,7 @@ import Masthead from './components/Masthead'
 import TopBar from './components/TopBar'
 import Carousel from './components/Carousel'
 import Catalog from './components/Catalog'
+import Promos from './components/Promos'
 import CartDrawer from './components/CartDrawer'
 import Footer from './components/Footer'
 import Track from './components/Track'
@@ -18,6 +19,7 @@ import Admin from './components/Admin'
 function Shop() {
   const { categories, loading: lc } = useCategories()
   const { products, loading: lp } = useProducts()
+  const { promos } = usePromos()
   const [query, setQuery] = useState('')
   const [picked, setPicked] = useState(null)
   const { toast } = useCart()
@@ -30,6 +32,7 @@ function Shop() {
       <TopBar query={query} setQuery={setQuery} />
       <main>
         <Carousel products={products} onPick={setPicked} loading={loading} />
+        <Promos promos={promos} products={products} />
         <Catalog
           categories={categories}
           products={products}
@@ -53,6 +56,7 @@ function Shop() {
 export default function App() {
   const [hash, setHash] = useState(window.location.hash)
   const { products } = useProducts()
+  const { promos } = usePromos()
   useEffect(() => {
     const f = () => setHash(window.location.hash)
     window.addEventListener('hashchange', f)
@@ -64,7 +68,7 @@ export default function App() {
       {hash === '#admin' ? (
         <Admin />
       ) : (
-        <CartProvider products={products}>
+        <CartProvider products={products} promos={promos}>
           <Shop />
         </CartProvider>
       )}
