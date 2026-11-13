@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '../cart'
 import { setValue, newId, reserveSlot } from '../store'
 import { useNode } from '../hooks'
+import { notifyOrder } from '../push'
 import { useSettings } from '../settings'
 import { money, openDates, slotsFor, fmtDate, makeCode, orderMessage, waLink, imgUrl, deliveryDates, deliverySlotsFor } from '../utils'
 
@@ -116,6 +117,7 @@ export default function CartDrawer() {
         code: order.code, firstName: order.name, status: 'pending',
         type: order.type, pickupDate: order.pickupDate, pickupTime: order.pickupTime, total: order.total, createdAt: order.createdAt,
       })
+      notifyOrder(order.code)
       try { localStorage.setItem('criollo-last-code', order.code) } catch {}
       setDone(order)
       setView('done')

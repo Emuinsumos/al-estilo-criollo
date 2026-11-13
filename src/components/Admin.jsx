@@ -7,6 +7,7 @@ import { beep, norm, fmtDate, fmtDateTime, money, priceInfo, readyMessage, uploa
 import ImageCropper from './ImageCropper'
 import DeliveryAdmin from './DeliveryAdmin'
 import PromosAdmin from './PromosAdmin'
+import { pushState, enablePush, disablePush } from '../push'
 
 export default function Admin() {
   const s = useSettings()
@@ -43,6 +44,46 @@ export default function Admin() {
       </div>
     )
   return <Panel onExit={logoutUser} username={user.username} />
+}
+
+// Avisos push de pedidos nuevos en ESTE celular
+function PushToggle() {
+  const [st, setSt] = useState('off')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  useEffect(() => { pushState().then(setSt) }, [])
+  if (st === 'unsupported') return null
+
+  const on = async () => {
+    setBusy(true)
+    setMsg('')
+    try { await enablePush() } catch (e) {
+      setMsg(e.message === 'denied' ? 'No diste permiso. Habilitá las notificaciones de este sitio desde los ajustes del navegador y probá de nuevo.' : 'No se pudo activar. Probá de nuevo.')
+    }
+    setSt(await pushState())
+    setBusy(false)
+  }
+  const off = async () => {
+    setBusy(true)
+    try { await disablePush() } catch {}
+    setSt(await pushState())
+    setBusy(false)
+  }
+
+  if (st === 'on')
+    return (
+      <div className="hint" style={{ marginBottom: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span>🔔 Avisos de pedidos activados en este celular</span>
+        <button className="mini" onClick={off} disabled={busy}>Desactivar</button>
+      </div>
+    )
+  return (
+    <div className="ocard" style={{ borderLeftColor: 'var(--gold)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      <span>🔔 Activá los avisos para enterarte al instante cuando entre un pedido, aunque tengas la web cerrada.</span>
+      {st !== 'denied' && <button className="act warn" onClick={on} disabled={busy}>{busy ? 'Activando…' : 'Activar avisos'}</button>}
+      {(st === 'denied' || msg) && <div className="err" style={{ width: '100%' }}>{st === 'denied' ? 'Las notificaciones están bloqueadas para este sitio. Habilitalas desde los ajustes del navegador (candado de la barra de direcciones → Notificaciones).' : msg}</div>}
+    </div>
+  )
 }
 
 function Panel({ onExit, username }) {
@@ -85,6 +126,7 @@ function Panel({ onExit, username }) {
           <button className={`tab ${tab === 'biz' ? 'on' : ''}`} onClick={() => setTab('biz')}>Negocio {!s.phone && <span className="n">!</span>}</button>
         </div>
         <div className="adm-body">
+          <PushToggle />
           {tab === 'orders' && <Orders orders={orders} />}
           {tab === 'delivery' && <DeliveryAdmin />}
           {tab === 'promos' && <PromosAdmin />}

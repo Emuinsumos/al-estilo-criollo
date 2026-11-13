@@ -19,6 +19,7 @@
       "reviews": { ".read": true },
       "botItems": { ".read": true },
       "promos": { ".read": true },
+      "push": { ".read": true },
       "delivery": {
         "zones": { ".read": true },
         "schedule": { ".read": true },

@@ -84,3 +84,6 @@ export const DEFAULT_BOT = [
   { q: '¿El precio final puede variar?', a: 'Los productos por peso pueden variar levemente. El importe final se confirma al pesar en el local.' },
 ]
 export const DEFAULT_BOT_GREETING = '¡Hola! Soy el asistente de {nombre}. ¿En qué te ayudo?'
+
+// Avisos push de pedidos nuevos (clave pública; la privada vive solo en las variables de Vercel).
+export const VAPID_PUBLIC = 'BMw6v4vcRQUdLvBilUe8U-q0LVb-VB5rlDCrX5iHFWsIAjCrASaaUYOlB8xC9NaG4i-vIkIKJFW35heBTyfPb38'
